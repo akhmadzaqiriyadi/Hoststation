@@ -1,15 +1,27 @@
-// ProductsSection.jsx
 'use client';
 import { useState } from 'react';
-// import Image from 'next/image'; // Tidak digunakan dalam ProductsSection yang Anda berikan
 import Link from 'next/link';
-// Asumsikan lucide-react tersedia di proyek seperti pada komponen referensi
-import { CheckCircle } from 'lucide-react'; // Contoh ikon, bisa disesuaikan
+import { CheckCircle } from 'lucide-react';
+
+type Product = {
+  id: number;
+  title: string;
+  description: string;
+  features: string[];
+  price: string;
+  popular: boolean;
+  cta: string;
+  link: string;
+};
+
+type ProductCategory = {
+  [key: string]: Product[];
+};
 
 export default function ProductsSection() {
-  const [activeTab, setActiveTab] = useState('hosting');
+  const [activeTab, setActiveTab] = useState<'hosting' | 'management' | 'consulting'>('hosting');
 
-  const products = {
+  const products: ProductCategory = {
     hosting: [
       {
         id: 1,
@@ -18,8 +30,8 @@ export default function ProductsSection() {
         features: ["1-hour session", "Single platform", "Basic product presentation", "Post-stream analytics"],
         price: "Starting at Rp 500.000",
         popular: false,
-        cta: "View Details", // Teks Call-to-Action
-        link: "/services/basic-live-host" // Link tujuan
+        cta: "View Details",
+        link: "/services/basic-live-host"
       },
       {
         id: 2,
@@ -101,36 +113,23 @@ export default function ProductsSection() {
         {/* Tab Navigation */}
         <div className="flex justify-center mb-10">
           <div className="inline-flex p-1 bg-white/10 rounded-lg backdrop-blur-sm border border-emerald-700/30">
-            <button
-              onClick={() => setActiveTab('hosting')}
-              className={`px-4 sm:px-5 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
-                activeTab === 'hosting' ? 'bg-yellow-500 text-emerald-900 shadow-lg' : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              Host Packages
-            </button>
-            <button
-              onClick={() => setActiveTab('management')}
-              className={`px-4 sm:px-5 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
-                activeTab === 'management' ? 'bg-yellow-500 text-emerald-900 shadow-lg' : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              Management
-            </button>
-            <button
-              onClick={() => setActiveTab('consulting')}
-              className={`px-4 sm:px-5 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
-                activeTab === 'consulting' ? 'bg-yellow-500 text-emerald-900 shadow-lg' : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              Consulting
-            </button>
+            {['hosting', 'management', 'consulting'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as 'hosting' | 'management' | 'consulting')}
+                className={`px-4 sm:px-5 py-2 rounded-md text-sm font-medium transition-colors duration-150 ${
+                  activeTab === tab ? 'bg-yellow-500 text-emerald-900 shadow-lg' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {tab === 'hosting' ? 'Host Packages' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Product Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products[activeTab].map((product) => (
+          {products[activeTab].map((product: Product) => (
             <div
               key={product.id}
               className={`flex flex-col bg-white/5 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border ${
@@ -154,7 +153,7 @@ export default function ProductsSection() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-auto"> {/* Pushes button to the bottom */}
+                <div className="mt-auto">
                   <Link
                     href={product.link || "/contact"}
                     className={`block w-full py-3 px-4 rounded-lg text-center font-medium transition-colors duration-150 text-sm ${
