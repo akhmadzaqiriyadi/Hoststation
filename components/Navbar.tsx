@@ -107,7 +107,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50">
+    <div className="fixed top-0 left-0 right-0 z-50 w-screen">
       <motion.nav 
         className={`transition-all duration-300 ${
           scrolled 
@@ -256,14 +256,14 @@ const Navbar = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
-            className="md:hidden fixed top-24 left-0 right-0 z-40"
+            className="md:hidden fixed top-24 w-screen left-0 right-0 z-40"
             variants={menuVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <motion.div 
-              className={`mx-4 md:mx-12 bg-indigo-900/95 backdrop-blur-md shadow-lg rounded-2xl border border-indigo-800`}
+              className={`mx-4 md:mx-12 bg-emerald-900/95 backdrop-blur-md shadow-lg rounded-2xl border border-emerald-800`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -279,7 +279,7 @@ const Navbar = () => {
                     <Link 
                       href={item.href} 
                       className={`block px-4 py-2 text-white hover:bg-indigo-800 rounded-lg ${
-                        activeSection === item.id ? 'bg-indigo-800' : ''
+                        activeSection === item.id ? 'bg-emerald-800' : ''
                       }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -290,7 +290,7 @@ const Navbar = () => {
                 <motion.div variants={menuItemVariants} className="space-y-2">
                   <Link 
                     href="/apply" 
-                    className="flex items-center px-4 py-2 border border-white text-white rounded-lg hover:bg-white hover:text-indigo-900 transition-colors"
+                    className="flex items-center px-4 py-2 border border-white text-white rounded-lg hover:bg-white hover:text-emerald-900 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <UserPlus size={16} className="mr-2" />
@@ -299,7 +299,7 @@ const Navbar = () => {
                   
                   <Link 
                     href="/hire" 
-                    className="flex items-center px-4 py-2 bg-yellow-500 text-indigo-900 font-medium rounded-lg hover:bg-yellow-400"
+                    className="flex items-center px-4 py-2 bg-yellow-500 text-emerald-900 font-medium rounded-lg hover:bg-yellow-400"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <ShoppingBag size={16} className="mr-2" />

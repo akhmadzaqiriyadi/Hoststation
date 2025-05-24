@@ -1,4 +1,4 @@
-import AboutUs from '@/components/AboutUs';
+// import AboutUs from '@/components/AboutUs';
 import HeroSection from '@/components/HeroSection';
 import HostsPage from '@/components/HostPage';
 import ProductsSection from "@/components/ProductsSection";
@@ -11,7 +11,7 @@ export default function Home() {
       <ProductsSection />
       <HostsPage />
       {/* <TrainingSection /> */}
-      <AboutUs />
+      {/* <AboutUs /> */}
     </main>
   );
 }
