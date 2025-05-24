@@ -16,6 +16,7 @@ import {
   UserPlus,
   ShoppingBag
 } from 'lucide-react';
+import { MouseEventHandler } from 'react';
 
 const Footer = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -262,7 +263,7 @@ const Footer = () => {
 };
 
 // Scroll to Top Button Component
-const AnimatedScrollToTop = ({ show, onClick }) => {
+const AnimatedScrollToTop = ({ show, onClick }: { show: boolean; onClick: MouseEventHandler<HTMLButtonElement> }) => {
   return (
     <motion.button
       className={`fixed bottom-8 right-8 bg-yellow-500 text-emerald-900 p-3 rounded-full shadow-lg z-50 ${
