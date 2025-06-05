@@ -75,19 +75,19 @@ export default function HeroSection() {
               variants={fadeIn}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
             >
-              Elevate Your <motion.span 
+              Tingkatkan Strategi <motion.span 
                 initial={{ color: "#FACC15" }}
                 animate={{ color: "#FCD34D" }}
                 transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
                 className="text-yellow-400"
-              >Live Commerce</motion.span> Strategy
+              >Live Commerce</motion.span> Anda
             </motion.h1>
             <motion.p 
               variants={fadeIn}
               className="text-lg md:text-xl text-gray-200"
             >
-              HostStation connects brands with professional live streaming hosts. 
-              We train talent and streamline your live selling success.
+              HostStation menghubungkan brand dengan host live streaming profesional. 
+              Kami melatih talenta dan mengoptimalkan kesuksesan penjualan live Anda.
             </motion.p>
             <motion.div 
               variants={staggerContainer}
@@ -95,12 +95,12 @@ export default function HeroSection() {
             >
               <motion.div variants={slideUp}>
                 <Link href="/training" className="block bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-3 px-6 rounded-full transition duration-300 text-center">
-                  Join as Talent
+                  Gabung Jadi Host
                 </Link>
               </motion.div>
               <motion.div variants={slideUp}>
                 <Link href="/products" className="block bg-transparent border-2 border-white hover:bg-white hover:text-indigo-800 text-white font-semibold py-3 px-6 rounded-full transition duration-300 text-center">
-                  Hire a Host
+                  Sewa Host
                 </Link>
               </motion.div>
             </motion.div>
@@ -119,7 +119,7 @@ export default function HeroSection() {
                   ></motion.div>
                 ))}
               </div>
-              <p className="text-gray-300 text-sm">Trusted by <span className="font-bold">50+ brands</span> nationwide</p>
+              <p className="text-gray-300 text-sm">Dipercaya oleh <span className="font-bold">50+ brand</span> di seluruh Indonesia</p>
             </motion.div>
           </motion.div>
           
@@ -134,7 +134,14 @@ export default function HeroSection() {
               className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-yellow-600 w-full aspect-video max-w-lg mx-auto"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent z-0">
-              <Image src="/live.gif" alt="Hero Image" layout="fill"/>
+              <video 
+                src="/hero.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
               </div>
               <motion.div 
                 initial={{ scale: 0 }}
@@ -239,7 +246,7 @@ export default function HeroSection() {
                   120+
                 </motion.span>
               </motion.p>
-              <p className="text-gray-300">Trained Hosts</p>
+              <p className="text-gray-300">Host Terlatih</p>
             </motion.div>
             <motion.div variants={statsItem} className="text-center">
               <motion.p 
@@ -256,7 +263,7 @@ export default function HeroSection() {
                   50+
                 </motion.span>
               </motion.p>
-              <p className="text-gray-300">Partner Brands</p>
+              <p className="text-gray-300">Brand Partner</p>
             </motion.div>
             <motion.div variants={statsItem} className="text-center">
               <motion.p 
@@ -273,7 +280,7 @@ export default function HeroSection() {
                   96.6%
                 </motion.span>
               </motion.p>
-              <p className="text-gray-300">Sales Increase</p>
+              <p className="text-gray-300">Peningkatan Penjualan</p>
             </motion.div>
             <motion.div variants={statsItem} className="text-center">
               <motion.p 
@@ -290,7 +297,7 @@ export default function HeroSection() {
                   500+
                 </motion.span>
               </motion.p>
-              <p className="text-gray-300">Live Sessions</p>
+              <p className="text-gray-300">Sesi Live</p>
             </motion.div>
           </motion.div>
         </motion.div>

@@ -1,877 +1,559 @@
-"use client";
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Star,
-  ThumbsUp,
-  Filter,
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { 
+  CheckCircle, 
+  Star, 
+  Sparkles, 
+  ArrowRight, 
+  Trophy,
+  Target,
   Users,
-  Calendar,
-  Tag,
-  ChevronDown,
-  Search,
-  Sliders,
   Clock,
-  Briefcase,
-  Globe,
-  Star as StarIcon,
-  DollarSign,
-  X,
-} from "lucide-react";
+  Zap,
+  Crown,
+  Video,
+  BarChart3,
+  MessageSquare,
+  Play,
+  Camera,
+  Mic,
+  TrendingUp,
+  Award,
+  Heart,
+  Shield,
+  ChevronRight
+} from 'lucide-react';
 
-// Host data - in a real application, this would come from an API or database
-const hosts = [
-  {
-    id: 1,
-    name: "Anita Wijaya",
-    avatar: "/host/ayas.png",
-    specialty: "Beauty & Fashion",
-    rating: 4.9,
-    reviews: 128,
-    languages: ["Indonesian", "English"],
-    experience: "3+ years",
-    engagement: "High",
-    bio: "Professional beauty influencer specializing in skincare and makeup tutorials. Known for creating engaging product demonstrations with high conversion rates.",
-    availability: "Weekends",
-    featuredIn: ["SephoraLive", "BeautyFest Asia"],
-    popular: true,
-    hourlyRate: "Rp 800.000",
-  },
-  {
-    id: 2,
-    name: "Budi Santoso",
-    avatar: "/host/sindi.png",
-    specialty: "Electronics & Tech",
-    rating: 4.8,
-    reviews: 97,
-    languages: ["Indonesian", "English", "Mandarin"],
-    experience: "4+ years",
-    engagement: "Very High",
-    bio: "Tech expert with background in electronic engineering. Skilled at explaining technical features in simple terms to drive customer interest.",
-    availability: "Weekdays/Evenings",
-    featuredIn: ["TechWeek Jakarta", "Gadget Show 2024"],
-    popular: false,
-    hourlyRate: "Rp 900.000",
-  },
-  {
-    id: 3,
-    name: "Citra Damayanti",
-    avatar: "/host/ayas.png",
-    specialty: "Home & Lifestyle",
-    rating: 4.7,
-    reviews: 83,
-    languages: ["Indonesian", "English"],
-    experience: "2+ years",
-    engagement: "High",
-    bio: "Interior designer turned lifestyle host. Creates immersive product experiences focusing on home goods and decorative items.",
-    availability: "Flexible",
-    featuredIn: ["HomeLiving Expo", "DesignWeek Indonesia"],
-    popular: false,
-    hourlyRate: "Rp 750.000",
-  },
-  {
-    id: 4,
-    name: "Dimas Pramudya",
-    avatar: "/host/sindi.png",
-    specialty: "Food & Cooking",
-    rating: 5.0,
-    reviews: 152,
-    languages: ["Indonesian", "English", "Japanese"],
-    experience: "5+ years",
-    engagement: "Very High",
-    bio: "Professional chef and culinary educator. Expert at demonstrating cooking equipment and food products with mouthwatering presentations.",
-    availability: "Weekends/Evenings",
-    featuredIn: ["Jakarta Culinary Festival", "FoodTech Summit"],
-    popular: true,
-    hourlyRate: "Rp 950.000",
-  },
-  {
-    id: 5,
-    name: "Elsa Maharani",
-    avatar: "/host/ayas.png",
-    specialty: "Health & Wellness",
-    rating: 4.8,
-    reviews: 76,
-    languages: ["Indonesian", "English"],
-    experience: "3+ years",
-    engagement: "Medium-High",
-    bio: "Certified fitness trainer and wellness coach. Specializes in supplements, fitness equipment and wellness products with authentic testimonials.",
-    availability: "Mornings/Weekends",
-    featuredIn: ["Wellness Summit Asia", "FitFest 2024"],
-    popular: false,
-    hourlyRate: "Rp 850.000",
-  },
-  {
-    id: 6,
-    name: "Fajar Ramadhan",
-    avatar: "/host/sindi.png",
-    specialty: "Fashion & Accessories",
-    rating: 4.9,
-    reviews: 112,
-    languages: ["Indonesian", "English", "French"],
-    experience: "4+ years",
-    engagement: "High",
-    bio: "Fashion stylist with background in luxury retail. Creates sophisticated presentations for fashion items with styling tips included.",
-    availability: "Weekdays/Evenings",
-    featuredIn: ["Jakarta Fashion Week", "Style Summit"],
-    popular: true,
-    hourlyRate: "Rp 900.000",
-  },
-];
+type HostProfile = {
+  id: number;
+  name: string;
+  specialty: string;
+  experience: string;
+  rating: number;
+  completedSessions: number;
+  platforms: string[];
+  languages: string[];
+  priceRange: string;
+  avatar: string; // now contains image path
+  featured: boolean;
+  skills: string[];
+  description: string;
+};
 
-export default function HostsPage() {
-  const [filteredHosts, setFilteredHosts] = useState(hosts);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+export default function HostPage() {
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'premium' | 'specialist' | 'newbie'>('all');
+  const [selectedHost, setSelectedHost] = useState<HostProfile | null>(null);
 
-  // Filter states
-  const [selectedSpecialty, setSelectedSpecialty] = useState("All");
-  const [selectedAvailability, setSelectedAvailability] = useState("All");
-  const [selectedLanguage, setSelectedLanguage] = useState("All");
-  const [selectedExperience, setSelectedExperience] = useState("All");
-  const [selectedRating, setSelectedRating] = useState("All");
-  const [priceRange, setPriceRange] = useState([700000, 1000000]);
-  const [showPopularOnly, setShowPopularOnly] = useState(false);
-  const [activeFilters, setActiveFilters] = useState(0);
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
 
-  // NEW: Sort state
-  const [sortOption, setSortOption] = useState("Relevance");
-
-  // Animation variants
   const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
       },
     },
   };
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
+  const cardHover = {
+    rest: { scale: 1, y: 0 },
+    hover: {
+      scale: 1.05,
+      y: -10,
+      transition: {
+        duration: 0.3,
+        type: "spring",
+        stiffness: 300,
+      },
     },
   };
 
-  const fadeIn = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.6 } },
-  };
-
-  // Get unique values for filters
-  const specialties = ["All", ...new Set(hosts.map((host) => host.specialty))];
-  const availabilities = [
-    "All",
-    ...new Set(hosts.map((host) => host.availability)),
+  const hosts: HostProfile[] = [
+    {
+      id: 1,
+      name: "Sarah Maharani",
+      specialty: "Fashion & Beauty",
+      experience: "3+ tahun",
+      rating: 4.9,
+      completedSessions: 150,
+      platforms: ["Instagram", "TikTok", "Shopee"],
+      languages: ["Indonesian", "English"],
+      priceRange: "Rp 800.000 - 1.500.000",
+      avatar: "/host/sindi.png",
+      featured: true,
+      skills: ["Product Storytelling", "Audience Engagement", "Trend Analysis"],
+      description: "Host berpengalaman dengan spesialisasi fashion dan beauty. Mampu menciptakan engagement tinggi dengan storytelling yang menarik."
+    },
+    {
+      id: 2,
+      name: "Andi Pratama",
+      specialty: "Tech & Gadgets",
+      experience: "4+ tahun",
+      rating: 4.8,
+      completedSessions: 200,
+      platforms: ["YouTube", "Instagram", "Tokopedia"],
+      languages: ["Indonesian", "English"],
+      priceRange: "Rp 1.200.000 - 2.000.000",
+      avatar: "/host/sindi.png",
+      featured: true,
+      skills: ["Technical Explanation", "Product Demo", "Q&A Management"],
+      description: "Ahli dalam menjelaskan produk teknologi dengan bahasa yang mudah dipahami. Pengalaman luas dalam live commerce tech products."
+    },
+    {
+      id: 3,
+      name: "Maya Sari",
+      specialty: "Home & Living",
+      experience: "2+ tahun",
+      rating: 4.7,
+      completedSessions: 120,
+      platforms: ["Instagram", "Facebook", "Lazada"],
+      languages: ["Indonesian"],
+      priceRange: "Rp 600.000 - 1.200.000",
+      avatar: "/host/sindi.png",
+      featured: false,
+      skills: ["Home Styling", "Product Comparison", "Lifestyle Content"],
+      description: "Spesialis dalam produk home dan living dengan kemampuan styling yang excellent. Menciptakan suasana hangat dan relatable."
+    },
+    {
+      id: 4,
+      name: "Rico Handoko",
+      specialty: "Sports & Fitness",
+      experience: "3+ tahun",
+      rating: 4.8,
+      completedSessions: 180,
+      platforms: ["Instagram", "TikTok", "YouTube"],
+      languages: ["Indonesian", "English"],
+      priceRange: "Rp 900.000 - 1.800.000",
+      avatar: "/host/ayas.png",
+      featured: true,
+      skills: ["Fitness Coaching", "Product Demo", "Motivational Speaking"],
+      description: "Host energik dengan background fitness coaching. Mampu memotivasi audience dan mendemonstrasikan produk dengan menarik."
+    },
+    {
+      id: 5,
+      name: "Sinta Dewi",
+      specialty: "Food & Culinary",
+      experience: "2+ tahun",
+      rating: 4.6,
+      completedSessions: 90,
+      platforms: ["Instagram", "TikTok", "Shopee"],
+      languages: ["Indonesian"],
+      priceRange: "Rp 500.000 - 1.000.000",
+      avatar: "/host/ayas.png",
+      featured: false,
+      skills: ["Cooking Demo", "Food Photography", "Recipe Creation"],
+      description: "Chef berpengalaman yang ahli dalam cooking demo dan food presentation. Menciptakan konten kuliner yang menggugah selera."
+    },
+    {
+      id: 6,
+      name: "David Chen",
+      specialty: "Automotive",
+      experience: "5+ tahun",
+      rating: 4.9,
+      completedSessions: 250,
+      platforms: ["YouTube", "Instagram", "Tokopedia"],
+      languages: ["Indonesian", "English", "Mandarin"],
+      priceRange: "Rp 1.500.000 - 3.000.000",
+      avatar: "/host/ayas.png",
+      featured: true,
+      skills: ["Technical Review", "Product Comparison", "Industry Knowledge"],
+      description: "Expert automotive dengan pengalaman 5+ tahun. Memiliki knowledge mendalam tentang otomotif dan kemampuan review yang excellent."
+    }
   ];
-  const allLanguages = Array.from(
-    new Set(hosts.flatMap((host) => host.languages))
-  );
-  const languages = ["All", ...allLanguages];
-  const experiences = [
-    "All",
-    "1+ years",
-    "2+ years",
-    "3+ years",
-    "4+ years",
-    "5+ years",
+
+  const categories = [
+    { id: 'all', label: 'Semua Host', icon: Users },
+    { id: 'premium', label: 'Premium Host', icon: Crown },
+    { id: 'specialist', label: 'Specialist', icon: Award },
+    { id: 'newbie', label: 'Rising Star', icon: Star }
   ];
-  const ratings = ["All", "4.5+", "4.7+", "4.8+", "4.9+", "5.0"];
 
-  // Function to convert price string to number
-  const priceToNumber = (priceStr: any) => {
-    return parseInt(priceStr.replace(/\D/g, ""));
-  };
-
-  // Function to convert number to price string
-  const numberToPrice = (num: any) => {
-    return `Rp ${num.toLocaleString("id-ID")}`;
-  };
-
-  // Format price range for display
-  const formatPriceRange = () => {
-    return `${numberToPrice(priceRange[0])} - ${numberToPrice(priceRange[1])}`;
-  };
-
-  // Count active filters
-  useEffect(() => {
-    let count = 0;
-    if (selectedSpecialty !== "All") count++;
-    if (selectedAvailability !== "All") count++;
-    if (selectedLanguage !== "All") count++;
-    if (selectedExperience !== "All") count++;
-    if (selectedRating !== "All") count++;
-    if (priceRange[0] !== 700000 || priceRange[1] !== 1000000) count++;
-    if (showPopularOnly) count++;
-    setActiveFilters(count);
-  }, [
-    selectedSpecialty,
-    selectedAvailability,
-    selectedLanguage,
-    selectedExperience,
-    selectedRating,
-    priceRange,
-    showPopularOnly,
-  ]);
-
-  // Reset all filters
-  const resetFilters = () => {
-    setSelectedSpecialty("All");
-    setSelectedAvailability("All");
-    setSelectedLanguage("All");
-    setSelectedExperience("All");
-    setSelectedRating("All");
-    setPriceRange([700000, 1000000]);
-    setShowPopularOnly(false);
-    setSearchTerm(""); // Also reset search term
-    setSortOption("Relevance"); // Reset sort option
-  };
-
-  // Filter and Sort hosts based on all criteria
-  useEffect(() => {
-    let results = [...hosts]; // Create a mutable copy
-
-    // 1. Filter by search term
-    if (searchTerm) {
-      results = results.filter(
-        (host) =>
-          host.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          host.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          host.bio.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // 2. Filter by specialty
-    if (selectedSpecialty !== "All") {
-      results = results.filter((host) => host.specialty === selectedSpecialty);
-    }
-
-    // 3. Filter by availability
-    if (selectedAvailability !== "All") {
-      results = results.filter((host) =>
-        host.availability.includes(selectedAvailability)
-      );
-    }
-
-    // 4. Filter by language
-    if (selectedLanguage !== "All") {
-      results = results.filter((host) =>
-        host.languages.includes(selectedLanguage)
-      );
-    }
-
-    // 5. Filter by experience
-    if (selectedExperience !== "All") {
-      const requiredYears = parseInt(selectedExperience);
-      results = results.filter((host) => {
-        const hostYears = parseInt(host.experience);
-        return hostYears >= requiredYears;
-      });
-    }
-
-    // 6. Filter by rating
-    if (selectedRating !== "All") {
-      const minRating = parseFloat(selectedRating);
-      results = results.filter((host) => host.rating >= minRating);
-    }
-
-    // 7. Filter by price range
-    results = results.filter((host) => {
-      const hostPrice = priceToNumber(host.hourlyRate);
-      return hostPrice >= priceRange[0] && hostPrice <= priceRange[1];
-    });
-
-    // 8. Filter by popular status
-    if (showPopularOnly) {
-      results = results.filter((host) => host.popular);
-    }
-
-    // 9. Apply Sorting
-    results.sort((a, b) => {
-      switch (sortOption) {
-        case "Rating (High to Low)":
-          return b.rating - a.rating;
-        case "Price (Low to High)":
-          return priceToNumber(a.hourlyRate) - priceToNumber(b.hourlyRate);
-        case "Price (High to Low)":
-          return priceToNumber(b.hourlyRate) - priceToNumber(a.hourlyRate);
-        case "Experience":
-          // Assuming "X+ years" where X is a number
-          return parseInt(b.experience) - parseInt(a.experience);
-        case "Relevance":
-        default:
-          // For relevance, you might keep the original order or apply
-          // a more complex relevance score based on search term matches, etc.
-          // For now, it simply maintains the filtered order.
-          return 0; // No change in order for "Relevance"
-      }
-    });
-
-    setFilteredHosts(results);
-  }, [
-    searchTerm,
-    selectedSpecialty,
-    selectedAvailability,
-    selectedLanguage,
-    selectedExperience,
-    selectedRating,
-    priceRange,
-    showPopularOnly,
-    sortOption, // IMPORTANT: Add sortOption to dependencies
-  ]);
-
-  // Filter Components
-  type RenderFilterSectionProps = {
-    title: string;
-    icon: React.ReactNode;
-    options: string[];
-    selectedValue: string;
-    setterFunction: (value: string) => void;
-  };
-
-  const renderFilterSection = (
-    title: RenderFilterSectionProps["title"],
-    icon: RenderFilterSectionProps["icon"],
-    options: RenderFilterSectionProps["options"],
-    selectedValue: RenderFilterSectionProps["selectedValue"],
-    setterFunction: RenderFilterSectionProps["setterFunction"]
-  ) => {
-    return (
-      <div className="mb-6">
-        <div className="flex items-center text-white mb-3">
-          {icon}
-          <span className="ml-2 font-medium">{title}</span>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <div className="flex flex-wrap gap-2">
-            {options.map((option) => (
-              <button
-                key={option}
-                onClick={() => setterFunction(option)}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  selectedValue === option
-                    ? "bg-yellow-500 text-emerald-900 font-medium"
-                    : "bg-white/10 text-gray-300 hover:bg-white/20"
-                } transition-colors`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Render filter panel (now always for the sidebar)
-  const renderFilterPanelContent = () => (
-    <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg border border-emerald-700/30 h-full overflow-y-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-white">Filter Hosts</h3>
-        {activeFilters > 0 && (
-          <button
-            onClick={resetFilters}
-            className="text-yellow-400 hover:text-yellow-300 transition-colors flex items-center"
-          >
-            <span>Reset All</span>
-            <span className="ml-2 bg-yellow-500 text-emerald-900 rounded-full px-2 py-0.5 text-xs font-medium">
-              {activeFilters}
-            </span>
-          </button>
-        )}
-        <button
-          onClick={() => setIsFilterSidebarOpen(false)}
-          className="lg:hidden text-gray-400 hover:text-white"
-        >
-          <X className="h-6 w-6" />
-        </button>
-      </div>
-
-      {/* Active Filters Display */}
-      {activeFilters > 0 && (
-        <div className="mb-6">
-          <p className="text-sm text-gray-400 mb-2">Active filters:</p>
-          <div className="flex flex-wrap gap-2">
-            {selectedSpecialty !== "All" && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{selectedSpecialty}</span>
-                <button
-                  onClick={() => setSelectedSpecialty("All")}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {selectedAvailability !== "All" && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{selectedAvailability}</span>
-                <button
-                  onClick={() => setSelectedAvailability("All")}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {selectedLanguage !== "All" && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{selectedLanguage}</span>
-                <button
-                  onClick={() => setSelectedLanguage("All")}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {selectedExperience !== "All" && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{selectedExperience}</span>
-                <button
-                  onClick={() => setSelectedExperience("All")}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {selectedRating !== "All" && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{selectedRating}+ rating</span>
-                <button
-                  onClick={() => setSelectedRating("All")}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {(priceRange[0] !== 700000 || priceRange[1] !== 1000000) && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>{formatPriceRange()}</span>
-                <button
-                  onClick={() => setPriceRange([700000, 1000000])}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {showPopularOnly && (
-              <div className="bg-emerald-700/40 text-white text-xs rounded-full px-3 py-1 flex items-center">
-                <span>Top Performers</span>
-                <button
-                  onClick={() => setShowPopularOnly(false)}
-                  className="ml-2 hover:text-yellow-300"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Specialty Filter */}
-      {renderFilterSection(
-        "Specialty",
-        <Briefcase className="h-4 w-4" />,
-        specialties,
-        selectedSpecialty,
-        setSelectedSpecialty
-      )}
-
-      {/* Availability Filter */}
-      {renderFilterSection(
-        "Availability",
-        <Clock className="h-4 w-4" />,
-        availabilities,
-        selectedAvailability,
-        setSelectedAvailability
-      )}
-
-      {/* Language Filter */}
-      {renderFilterSection(
-        "Language",
-        <Globe className="h-4 w-4" />,
-        languages,
-        selectedLanguage,
-        setSelectedLanguage
-      )}
-
-      {/* Experience Filter */}
-      {renderFilterSection(
-        "Experience",
-        <Briefcase className="h-4 w-4" />,
-        experiences,
-        selectedExperience,
-        setSelectedExperience
-      )}
-
-      {/* Rating Filter */}
-      {renderFilterSection(
-        "Rating",
-        <StarIcon className="h-4 w-4" />,
-        ratings,
-        selectedRating,
-        setSelectedRating
-      )}
-
-      {/* Price Range Filter */}
-      <div className="mb-6">
-        <div className="flex items-center text-white mb-3">
-          <DollarSign className="h-4 w-4" />
-          <span className="ml-2 font-medium">Price Range</span>
-        </div>
-        <div className="bg-white/5 rounded-lg p-4">
-          <div className="flex justify-between text-sm mb-3">
-            <span className="text-gray-300">
-              {numberToPrice(priceRange[0])}
-            </span>
-            <span className="text-gray-300">
-              {numberToPrice(priceRange[1])}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setPriceRange([700000, 800000])}
-              className={`px-3 py-1 rounded-full text-sm ${
-                priceRange[0] === 700000 && priceRange[1] === 800000
-                  ? "bg-yellow-500 text-emerald-900 font-medium"
-                  : "bg-white/10 text-gray-300 hover:bg-white/20"
-              } transition-colors`}
-            >
-              &lt; Rp 800K
-            </button>
-            <button
-              onClick={() => setPriceRange([800000, 900000])}
-              className={`px-3 py-1 rounded-full text-sm ${
-                priceRange[0] === 800000 && priceRange[1] === 900000
-                  ? "bg-yellow-500 text-emerald-900 font-medium"
-                  : "bg-white/10 text-gray-300 hover:bg-white/20"
-              } transition-colors`}
-            >
-              Rp 800K - 900K
-            </button>
-            <button
-              onClick={() => setPriceRange([900000, 1000000])}
-              className={`px-3 py-1 rounded-full text-sm ${
-                priceRange[0] === 900000 && priceRange[1] === 1000000
-                  ? "bg-yellow-500 text-emerald-900 font-medium"
-                  : "bg-white/10 text-gray-300 hover:bg-white/20"
-              } transition-colors`}
-            >
-              &gt; Rp 900K
-            </button>
-            <button
-              onClick={() => setPriceRange([700000, 1000000])}
-              className={`px-3 py-1 rounded-full text-sm ${
-                priceRange[0] === 700000 && priceRange[1] === 1000000
-                  ? "bg-yellow-500 text-emerald-900 font-medium"
-                  : "bg-white/10 text-gray-300 hover:bg-white/20"
-              } transition-colors`}
-            >
-              All
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Popular Only Toggle */}
-      <div className="mb-6">
-        <div className="flex items-center text-white mb-3">
-          <Star className="h-4 w-4" />
-          <span className="ml-2 font-medium">Top Performers</span>
-        </div>
-        <div className="bg-white/5 rounded-lg p-3">
-          <button
-            onClick={() => setShowPopularOnly(!showPopularOnly)}
-            className={`px-3 py-1 rounded-full text-sm ${
-              showPopularOnly
-                ? "bg-yellow-500 text-emerald-900 font-medium"
-                : "bg-white/10 text-gray-300 hover:bg-white/20"
-            } transition-colors`}
-          >
-            {showPopularOnly ? "Show All" : "Show Top Performers Only"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const filteredHosts = hosts.filter(host => {
+    if (selectedCategory === 'all') return true;
+    if (selectedCategory === 'premium') return host.featured && host.rating >= 4.8;
+    if (selectedCategory === 'specialist') return host.completedSessions >= 150;
+    if (selectedCategory === 'newbie') return host.completedSessions < 150;
+    return true;
+  });
 
   return (
-    <main className="pt-32 pb-20 bg-gradient-to-b from-emerald-900 to-emerald-950 min-h-screen relative">
-      {/* Hero Section */}
-      <motion.div
-        className="container mx-auto px-4 md:px-8 text-white mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950">
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        className="pt-32 pb-16 px-4"
       >
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Our Professional Hosts
-        </h1>
-        <p className="text-lg text-gray-300 max-w-3xl">
-          Browse our curated selection of trained live commerce hosts ready to
-          elevate your brand's online presence and boost your sales through
-          engaging live streams.
-        </p>
-      </motion.div>
+        <div className="container mx-auto max-w-7xl">
+          {/* Header Section */}
+          <motion.div variants={fadeIn} className="text-center mb-16">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+              className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 px-6 py-3 rounded-full mb-6 backdrop-blur-sm border border-blue-500/30"
+            >
+              <Video className="w-5 h-5" />
+              <span className="font-semibold">Tim Host Professional</span>
+            </motion.div>
 
-      <div className="container mx-auto px-4 md:px-8">
-        {/* Search Bar and Filter Button */}
-        <motion.div
-          className="flex items-center gap-4 mb-6"
-          variants={fadeIn}
-          initial="hidden"
-          animate="visible"
-        >
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by name, specialty or keywords..."
-              className="w-full pl-10 pr-4 py-3 bg-white/10 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 text-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          {/* Filter Button */}
-          <button
-            onClick={() => setIsFilterSidebarOpen(true)}
-            className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white font-medium py-3 px-5 rounded-lg transition-colors flex-shrink-0"
-          >
-            <Filter className="h-5 w-5" />
-            <span>Filter</span>
-            {activeFilters > 0 && (
-              <span className="ml-1 bg-yellow-500 text-emerald-900 rounded-full px-2 py-0.5 text-xs font-medium">
-                {activeFilters}
-              </span>
-            )}
-          </button>
-        </motion.div>
-
-        {/* Main Content - Hosts Grid */}
-        <motion.div
-          className="w-full"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Results Count and Sort Dropdown */}
-          <div className="flex justify-between items-center mb-6 text-white">
-            <p className="text-lg">
-              Showing <span className="font-bold">{filteredHosts.length}</span>{" "}
-              hosts
-            </p>
-
-            <div className="hidden lg:block">
-              <select
-                className="bg-white/10 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                value={sortOption} // Bind value to state
-                onChange={(e) => setSortOption(e.target.value)} // Update state on change
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Host Terbaik
+              <motion.span
+                className="block text-yellow-400 mt-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
               >
-                <option>Relevance</option>
-                <option>Rating (High to Low)</option>
-                <option>Price (Low to High)</option>
-                <option>Price (High to Low)</option>
-                <option>Experience</option>
-              </select>
-            </div>
-          </div>
+                untuk Live Commerce Anda
+              </motion.span>
+            </h1>
+
+            <motion.p
+              variants={fadeIn}
+              className="text-xl text-emerald-100 max-w-3xl mx-auto mb-12"
+            >
+              Pilih dari tim host profesional kami yang berpengalaman dalam berbagai industri.
+              Setiap host telah terbukti mampu meningkatkan engagement dan konversi penjualan.
+            </motion.p>
+
+            {/* Category Filter */}
+            <motion.div
+              variants={fadeIn}
+              className="flex flex-wrap justify-center gap-2 mb-8"
+            >
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id as any)}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                    selectedCategory === category.id
+                      ? "bg-yellow-500 text-emerald-900"
+                      : "bg-white/10 text-emerald-200 hover:bg-white/20"
+                  }`}
+                >
+                  <category.icon className="w-4 h-4" />
+                  {category.label}
+                </button>
+              ))}
+            </motion.div>
+          </motion.div>
 
           {/* Host Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHosts.map((host) => (
+          <motion.div
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
+          >
+            {filteredHosts.map((host, idx) => (
               <motion.div
                 key={host.id}
-                variants={cardVariants}
-                className={`bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border ${
-                  host.popular ? "border-yellow-500" : "border-emerald-700/30"
+                variants={cardHover}
+                initial="rest"
+                whileHover="hover"
+                className={`relative bg-white/5 backdrop-blur-lg rounded-2xl p-6 border transition-all cursor-pointer ${
+                  host.featured 
+                    ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-orange-500/5' 
+                    : 'border-white/10'
                 }`}
+                onClick={() => setSelectedHost(host)}
               >
-                {host.popular && (
-                  <div className="bg-yellow-500 text-emerald-900 text-xs font-bold px-3 py-1 text-center">
-                    TOP PERFORMER
-                  </div>
+                {host.featured && (
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="absolute -top-3 -right-3 bg-yellow-500 text-emerald-900 px-3 py-1 rounded-full font-bold text-xs flex items-center gap-1"
+                  >
+                    <Crown className="w-3 h-3" />
+                    FEATURED
+                  </motion.div>
                 )}
 
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    {/* Avatar with placeholder */}
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 flex-shrink-0 border-2 border-yellow-500">
-                      <Image
-                        src={host.avatar}
-                        alt={`${host.name}'s avatar`}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-bold text-white">
-                        {host.name}
-                      </h3>
-                      <p className="text-yellow-400 font-medium">
-                        {host.specialty}
-                      </p>
-                      <div className="flex items-center mt-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="ml-1 text-white">{host.rating}</span>
-                        <span className="mx-1 text-gray-400">•</span>
-                        <span className="text-gray-300">
-                          {host.reviews} reviews
-                        </span>
-                      </div>
-                    </div>
+                {/* Host Avatar & Basic Info */}
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="relative w-16 h-16 bg-white/10 rounded-full overflow-hidden">
+                    <Image
+                      src={host.avatar}
+                      alt={host.name}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
-
-                  <p className="text-gray-300 text-sm mb-4">{host.bio}</p>
-
-                  <div className="space-y-2 mb-5">
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-gray-300 text-sm">Languages: </span>
-                      <span className="ml-1 text-white text-sm">
-                        {host.languages.join(", ")}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-gray-300 text-sm">
-                        Experience:{" "}
-                      </span>
-                      <span className="ml-1 text-white text-sm">
-                        {host.experience}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Tag className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-gray-300 text-sm">Rate: </span>
-                      <span className="ml-1 text-white font-medium text-sm">
-                        {host.hourlyRate}/hour
-                      </span>
-                    </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white mb-1">{host.name}</h3>
+                    <p className="text-yellow-400 font-semibold mb-1">{host.specialty}</p>
+                    <p className="text-emerald-200 text-sm">{host.experience} experience</p>
                   </div>
+                </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Link
-                      href={`/hosts/${host.id}`}
-                      className="flex-1 block bg-transparent border border-white text-white hover:bg-white hover:text-emerald-900 font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+                {/* Rating & Stats */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    <span className="text-yellow-400 font-semibold">{host.rating}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-emerald-200 text-sm">
+                    <Play className="w-4 h-4" />
+                    <span>{host.completedSessions} sessions</span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-emerald-200 text-sm mb-4 leading-relaxed">{host.description}</p>
+
+                {/* Skills */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {host.skills.slice(0, 2).map((skill, skillIdx) => (
+                    <span
+                      key={skillIdx}
+                      className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full"
                     >
-                      View Profile
-                    </Link>
+                      {skill}
+                    </span>
+                  ))}
+                  {host.skills.length > 2 && (
+                    <span className="text-emerald-200 text-xs px-2 py-1">
+                      +{host.skills.length - 2} more
+                    </span>
+                  )}
+                </div>
 
-                    <Link
-                      href={`/hire?host=${host.id}`}
-                      className="flex-1 block bg-yellow-500 hover:bg-yellow-600 text-emerald-900 font-medium py-2 px-4 rounded-lg transition-colors text-center text-sm"
+                {/* Platforms */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {host.platforms.map((platform, platformIdx) => (
+                    <span
+                      key={platformIdx}
+                      className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full"
                     >
-                      Book Now
-                    </Link>
-                  </div>
+                      {platform}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Price & CTA */}
+                <div className="border-t border-white/10 pt-4">
+                  <p className="text-white font-bold mb-3">{host.priceRange}</p>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                      host.featured
+                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-emerald-900'
+                        : 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
+                    }`}
+                  >
+                    Lihat Profile
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
                 </div>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
 
-          {/* No Results Message */}
-          {filteredHosts.length === 0 && (
-            <motion.div
-              className="mt-8 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="bg-white/5 backdrop-blur-md rounded-xl p-8 shadow-lg">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  No hosts found
-                </h3>
-                <p className="text-gray-300">
-                  Try adjusting your search or filters to find the perfect host
-                  for your needs.
-                </p>
-                <button
-                  onClick={resetFilters}
-                  className="mt-4 bg-yellow-500 text-emerald-900 px-4 py-2 rounded-lg font-medium"
-                >
-                  Reset All Filters
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Custom Request Section */}
+          {/* CTA Section */}
           <motion.div
-            className="mt-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            variants={fadeIn}
+            className="bg-gradient-to-r from-yellow-500/20 to-orange-500/10 backdrop-blur-lg rounded-2xl p-8 border border-yellow-500/30 mb-12"
           >
-            <div className="bg-gradient-to-r from-emerald-800 to-emerald-700 rounded-2xl p-6 shadow-lg">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-full md:w-2/3">
-                  <h3 className="text-xl font-bold text-white">
-                    Can't find what you're looking for?
-                  </h3>
-                  <p className="mt-2 text-sm text-gray-200">
-                    We can help you find the perfect host for your specific
-                    needs. Our team will work with you to understand your
-                    requirements and match you with the ideal talent.
-                  </p>
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
+              <div className="w-full md:w-2/3 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-yellow-500/20 text-yellow-300 px-4 py-2 rounded-full mb-4">
+                  <Target className="w-4 h-4" />
+                  <span className="font-semibold">Konsultasi Gratis</span>
                 </div>
-                <div className="w-full md:w-1/3 flex justify-center md:justify-end">
-                  <Link
-                    href="/contact"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-emerald-900 font-medium py-2 px-5 rounded-lg transition-colors text-sm"
-                  >
-                    Request Custom Match
-                  </Link>
+                <h3 className="text-2xl font-bold text-white mb-2">Tidak Yakin Pilih Host yang Mana?</h3>
+                <p className="text-emerald-200">
+                  Tim kami akan membantu Anda memilih host yang tepat sesuai dengan produk, target audience, dan budget Anda.
+                </p>
+              </div>
+              <div className="w-full md:w-1/3 flex md:justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-emerald-900 font-semibold py-4 px-8 rounded-xl transition-all flex items-center gap-2"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Konsultasi Sekarang
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Why Choose Our Hosts */}
+          <motion.div
+            variants={fadeIn}
+            className="mb-12"
+          >
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4">Mengapa Pilih Host Kami?</h2>
+              <p className="text-emerald-200 max-w-2xl mx-auto">
+                Setiap host telah melalui proses seleksi ketat dan pelatihan komprehensif untuk memastikan kualitas terbaik.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-6">
+              <motion.div
+                variants={cardHover}
+                initial="rest"
+                whileHover="hover"
+                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 text-center"
+              >
+                <div className="p-4 bg-blue-500/20 rounded-xl w-fit mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-blue-400" />
                 </div>
+                <h3 className="text-lg font-bold text-white mb-2">Terverifikasi</h3>
+                <p className="text-emerald-200 text-sm">Background check dan verifikasi identitas lengkap</p>
+              </motion.div>
+
+              <motion.div
+                variants={cardHover}
+                initial="rest"
+                whileHover="hover"
+                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 text-center"
+              >
+                <div className="p-4 bg-green-500/20 rounded-xl w-fit mx-auto mb-4">
+                  <TrendingUp className="w-8 h-8 text-green-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Proven Results</h3>
+                <p className="text-emerald-200 text-sm">Track record peningkatan penjualan yang terukur</p>
+              </motion.div>
+
+              <motion.div
+                variants={cardHover}
+                initial="rest"
+                whileHover="hover"
+                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 text-center"
+              >
+                <div className="p-4 bg-purple-500/20 rounded-xl w-fit mx-auto mb-4">
+                  <Award className="w-8 h-8 text-purple-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Trained Expert</h3>
+                <p className="text-emerald-200 text-sm">Pelatihan berkelanjutan dari ahli live commerce</p>
+              </motion.div>
+
+              <motion.div
+                variants={cardHover}
+                initial="rest"
+                whileHover="hover"
+                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 text-center"
+              >
+                <div className="p-4 bg-yellow-500/20 rounded-xl w-fit mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-yellow-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Customer First</h3>
+                <p className="text-emerald-200 text-sm">Fokus pada kepuasan klien dan hasil optimal</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Host Detail Modal */}
+      {selectedHost && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedHost(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-emerald-900/90 backdrop-blur-lg rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-6 mb-6">
+              <div className="relative w-24 h-24 bg-white/10 rounded-full overflow-hidden">
+                <Image
+                  src={selectedHost.avatar}
+                  alt={selectedHost.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold text-white mb-2">{selectedHost.name}</h2>
+                <p className="text-yellow-400 text-xl font-semibold mb-2">{selectedHost.specialty}</p>
+                <p className="text-emerald-200">{selectedHost.experience} • {selectedHost.completedSessions} completed sessions</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                  <span className="text-yellow-400 font-semibold">{selectedHost.rating}/5.0</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-white font-bold mb-3">Tentang Host</h3>
+                <p className="text-emerald-200 leading-relaxed">{selectedHost.description}</p>
+              </div>
+
+              <div>
+                <h3 className="text-white font-bold mb-3">Keahlian</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedHost.skills.map((skill, idx) => (
+                    <span key={idx} className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-white font-bold mb-3">Platform</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedHost.platforms.map((platform, idx) => (
+                    <span key={idx} className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm">
+                      {platform}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-white font-bold mb-3">Bahasa</h3>
+                <div className="flex gap-2">
+                  {selectedHost.languages.map((lang, idx) => (
+                    <span key={idx} className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm">
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white/5 rounded-xl p-4">
+                <h3 className="text-white font-bold mb-2">Harga</h3>
+                <p className="text-yellow-400 text-xl font-bold">{selectedHost.priceRange}</p>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-emerald-900 font-semibold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Book Sekarang
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedHost(null)}
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all"
+                >
+                  Tutup
+                </motion.button>
               </div>
             </div>
           </motion.div>
         </motion.div>
-      </div>
-
-      {/* Filter Sidebar (Off-canvas) */}
-      <AnimatePresence>
-        {isFilterSidebarOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              className="fixed inset-0 bg-black/50 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsFilterSidebarOpen(false)}
-            />
-
-            {/* Sidebar */}
-            <motion.aside
-              className="fixed top-0 right-0 h-full w-full max-w-sm bg-emerald-900 z-50 p-6 shadow-xl overflow-y-auto"
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-            >
-              {renderFilterPanelContent()}
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-    </main>
+      )}
+    </div>
   );
 }
